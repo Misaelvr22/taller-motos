@@ -48,7 +48,7 @@ function Menu() {
 
         {tabActiva === "ordenes" && (
           <Tarjeta>
-            <p className="text-gray-600">Aquí aparecerán las órdenes de servicio.</p>
+            <p className="text-gray-600">No tienes órdenes de servicio existentes</p>
           </Tarjeta>
         )}
       </main>
