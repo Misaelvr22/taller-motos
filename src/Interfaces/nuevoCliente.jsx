@@ -60,7 +60,7 @@ function NuevoCliente() {
       {/* Botones finales */}
       <div className="flex justify-end mt-8 space-x-3">
         <Boton texto="Limpiar Formulario" color="bg-gray-500" onClick={() => alert('Formulario limpio')} />
-        <Boton texto="Registrar Cliente" onClick={() => alert('Cliente registrado ✅')} />
+        <Boton texto="Registrar Cliente" onClick={() => alert('Cliente registrado')} />
       </div>
     </Tarjeta>
   );
