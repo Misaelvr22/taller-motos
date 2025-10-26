@@ -8,6 +8,12 @@ function NuevoCliente() {
   const agregarMoto = () => {
     setMotos([...motos, { id: motos.length + 1 }]);
   };
+  
+  const quitarMoto = () => {
+    if (motos.length > 1) {
+      setMotos(motos.slice(0, -1));
+    }
+  }
 
   return (
     <Tarjeta>
@@ -53,6 +59,7 @@ function NuevoCliente() {
         ))}
 
         <div className="flex justify-end mt-3">
+          <Boton texto="- Quitar Moto" color="bg-gray-700" onClick={quitarMoto}/>
           <Boton texto="+ Agregar Moto" color="bg-gray-700" onClick={agregarMoto} />
         </div>
       </div>
