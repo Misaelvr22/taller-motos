@@ -69,7 +69,6 @@ export default function GestionUsuarios() {
       align: 'right',
       headerAlign: 'right',
 
-      // Estos son los iconos que se visualizaran en nuestra tabla. 
       renderCell: (params) => {
 
         const handleEdit = () => {
@@ -85,6 +84,8 @@ export default function GestionUsuarios() {
         return (
           <div>
             <IconButton
+            // Estos son los iconos que se visualizaran en nuestra tabla. 
+
               aria-label="editar"
               size="small"
               color="primary" // Color azul (del tema)
@@ -94,6 +95,8 @@ export default function GestionUsuarios() {
             </IconButton>
 
             <IconButton
+            // Estos son los iconos que se visualizaran en nuestra tabla. 
+
               aria-label="eliminar"
               size="small"
               color="error" // Color rojo (del tema)
