@@ -1,4 +1,5 @@
 
+import Consulta from './Interfaces/consulta.jsx'
 import GestionUsuarios from './Interfaces/gestionUsuarios.jsx'
 import Login from './Interfaces/login.jsx'
 import Menu from './Interfaces/menu.jsx'
@@ -8,8 +9,8 @@ function App() {
     return (
         //<Login />
         //<Menu />
-        //<NuevoCliente />
-        <GestionUsuarios/>
+        ////<NuevoCliente />
+        <Consulta />
     )
 }
 export default App
