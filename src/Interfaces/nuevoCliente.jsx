@@ -1,6 +1,9 @@
 // src/Interfaces/nuevoCliente.jsx
 import React, { useState } from "react";
-import { Label, Input, Boton, Tarjeta } from "../componentes.jsx";
+import Label from "../components/Label.jsx";
+import Input from "../components/Input.jsx";
+import Boton from "../components/Boton.jsx";
+import Tarjeta from "../components/Tarjeta.jsx";
 
 function NuevoCliente() {
   const [motos, setMotos] = useState([{ id: 1 }]);

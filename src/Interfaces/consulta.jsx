@@ -1,5 +1,7 @@
 import React, { useState } from "react";
-import { Tarjeta, Ventana, Label, Input } from "../componentes.jsx";
+import Tarjeta from "../components/Tarjeta.jsx";
+import Label from "../components/Label.jsx";
+import Input from "../components/Input.jsx";
 
 export function Consulta() { 
   const [mostrarVentana, setMostrarVentana] = useState(false);
