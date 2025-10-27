@@ -10,8 +10,8 @@ function App() {
         //<Login />
         //<Menu />
         //<NuevoCliente />
-        //<Consulta />
-        <GestionUsuarios />
+        <Consulta />
+        //<GestionUsuarios />
     )
 }
 export default App

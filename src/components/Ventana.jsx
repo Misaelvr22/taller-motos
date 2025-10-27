@@ -1,4 +1,4 @@
-export function Ventana({ children, onClose }) {
+function Ventana({ children, onClose }) {
   const handleVentanaClick = (e) => e.stopPropagation();
   return (
     <div
@@ -19,3 +19,5 @@ export function Ventana({ children, onClose }) {
     </div>
   );
 }
+
+export default Ventana;
