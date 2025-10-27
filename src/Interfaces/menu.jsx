@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { Tab, Tarjeta } from "../componentes.jsx";
+import Tab from "../components/Tab.jsx";
+import Tarjeta from "../components/Tarjeta.jsx";
 import NuevoCliente from "./nuevoCliente.jsx";
 
 function Menu() {

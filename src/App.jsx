@@ -9,8 +9,9 @@ function App() {
     return (
         //<Login />
         //<Menu />
-        ////<NuevoCliente />
-        <Consulta />
+        //<NuevoCliente />
+        //<Consulta />
+        <GestionUsuarios />
     )
 }
 export default App
