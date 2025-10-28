@@ -18,18 +18,21 @@ export default function GestionUsuarios() {
 //Constantes para que acepte estados los modales. (Abran o cierrente)
   const [usuarioAEliminar, setUsuarioAEliminar] = useState(null);
   const [modalAbierto, setModalAbierto] = useState(false);
-
+  const [usuarioAEditar, setUsuarioAEditar] = useState(null);
 
   
   // Modal para agregar un usuario. 
   function agregarUsuario() {
     // Ya no muestra un alert, ahora ABRE el modal
+  setUsuarioAEditar(null); // Asegura que está en modo "Crear"
     setModalAbierto(true);
   }
 
   function cerrarModal() {
     setModalAbierto(false);
+  setUsuarioAEditar(null); // Limpia al cerrar
   }
+
   // Funcion para elminar a un usuario, y prevenir en caso de no existir. 
   const handleConfirmarEliminacion = () => {
   if (!usuarioAEliminar) {
@@ -73,7 +76,8 @@ export default function GestionUsuarios() {
 
         const handleEdit = () => {
           // Aquí pones la lógica para editar
-          alert(`Editar usuario ID: ${params.row.id}`);
+          setUsuarioAEditar(params.row); // 1. Guarda el usuario
+          setModalAbierto(true);      // 2. Abre el modal
         };
 
         const handleDelete = () => {
@@ -138,6 +142,7 @@ export default function GestionUsuarios() {
       <Modal
         open={modalAbierto}
         onClose={cerrarModal}
+        usuarioAEditar={usuarioAEditar} 
       />
       <ConfirmacionModal
         open={!!usuarioAEliminar} // El modal está abierto si 'usuarioAEliminar' NO es null
