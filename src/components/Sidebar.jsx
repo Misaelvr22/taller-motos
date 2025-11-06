@@ -6,13 +6,12 @@ function Sidebar() {
     const navigate = useNavigate();
     const location = useLocation();
     const user = getUsuario();
-    const isAdmin = user?.rol === "ADMIN";
 
     const menuItems = [
-        { path: "/dashboard", label: "Dashboard", icon: Home, roles: ["ADMINISTRADOR", "TRAbAJADOR"] },
-        { path: "/ConsultaClientes", label: "Clientes", icon: Users, roles: ["ADMINISTRADOR", "TRAbAJADOR"] },
-        { path: "/nuevo-cliente", label: "Nuevo Cliente", icon: UserPlus, roles: ["ADMINISTRADOR", "TRAbAJADOR"] },
-        { path: "/ordenes", label: "Órdenes", icon: ClipboardList, roles: ["ADMINISTRADOR", "TRAbAJADOR"] },
+        { path: "/dashboard", label: "Dashboard", icon: Home, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
+        { path: "/ConsultaClientes", label: "Clientes", icon: Users, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
+        { path: "/nuevo-cliente", label: "Nuevo Cliente", icon: UserPlus, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
+        { path: "/ordenes", label: "Órdenes", icon: ClipboardList, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
         { path: "/usuarios", label: "Gestionar Usuarios", icon: Settings, roles: ["ADMINISTRADOR"] },
     ];
 

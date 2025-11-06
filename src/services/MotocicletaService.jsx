@@ -1,5 +1,4 @@
 const API_URL = "http://localhost:8080/motocicletas";
-
 export async function crearMotocicleta(motocicleta, idCliente) {
     const response = await fetch(`${API_URL}/crear`, {
         method: "POST",

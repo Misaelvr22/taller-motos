@@ -6,16 +6,17 @@ export async function crearOrden(orden) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
             descripcionServicio: orden.descripcionTrabajo,
-            refacciones: orden.RefaccionesUtilizadas,
+            refacciones: orden.RefaccionesUtilizadas || "",
             fechaEntrada: orden.fechaIngreso,
             fechaEntrega: orden.fechaEntrega,
             status: orden.estado || "PENDIENTE",
-            Cliente: {
+            cliente: {
                 idCliente: orden.idCliente
             },
-            Motocicleta: {
+            motocicleta: {
                 idMotocicleta: orden.idMotocicleta
-            }
+            },
+            activo: true
         }),
     });
 
