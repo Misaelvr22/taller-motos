@@ -26,7 +26,7 @@ function AdminPanel() {
 
     const cargarUsuariosTodos = async () => {
         try {
-            const response = await fetch("http://localhost:8080/usuarios/listar-todos", {
+            const response = await fetch("${API_BASE_URL}/usuarios/listar-todos", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -41,7 +41,7 @@ function AdminPanel() {
 
     const cargarClientesTodos = async () => {
         try {
-            const response = await fetch("http://localhost:8080/clientes/listar-todos", {
+            const response = await fetch("${API_BASE_URL}/clientes/listar-todos", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -56,7 +56,7 @@ function AdminPanel() {
 
     const cargarMotocicletasTodos = async () => {
         try {
-            const response = await fetch("http://localhost:8080/motocicletas/listar-todos", {
+            const response = await fetch("${API_BASE_URL}/motocicletas/listar-todos", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -71,7 +71,7 @@ function AdminPanel() {
 
     const cargarOrdenesTodos = async () => {
         try {
-            const response = await fetch("http://localhost:8080/orden/listar-todos", {
+            const response = await fetch("${API_BASE_URL}/orden/listar-todos", {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -86,7 +86,7 @@ function AdminPanel() {
 
     const reactivarUsuario = async (id) => {
         try {
-            const response = await fetch(`http://localhost:8080/usuarios/reactivar/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/usuarios/reactivar/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });
@@ -101,7 +101,7 @@ function AdminPanel() {
     
     const eliminarUsuarioPermanente = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/usuarios/eliminar/${modalEliminar.id}`, {
+            const response = await fetch(`${API_BASE_URL}/usuarios/eliminar/${modalEliminar.id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -117,7 +117,7 @@ function AdminPanel() {
 
     const reactivarCliente = async (id) => {
         try {
-            const response = await fetch(`http://localhost:8080/clientes/reactivar/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/clientes/reactivar/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });
@@ -132,7 +132,7 @@ function AdminPanel() {
     
     const eliminarClientePermanente = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/clientes/eliminar/${modalEliminar.id}`, {
+            const response = await fetch(`${API_BASE_URL}/clientes/eliminar/${modalEliminar.id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
@@ -148,7 +148,7 @@ function AdminPanel() {
 
     const reactivarOrden = async (id) => {
         try {
-            const response = await fetch(`http://localhost:8080/orden/reactivar/${id}`, {
+            const response = await fetch(`${API_BASE_URL}/orden/reactivar/${id}`, {
                 method: "PUT",
                 headers: { "Content-Type": "application/json" },
             });
@@ -163,7 +163,7 @@ function AdminPanel() {
     
     const eliminarOrdenPermanente = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/orden/eliminar/${modalEliminar.id}`, {
+            const response = await fetch(`${API_BASE_URL}/orden/eliminar/${modalEliminar.id}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });

@@ -4,11 +4,13 @@ import Layout from "../components/Layout.jsx";
 import { Users, Search, Edit2, Trash2, Plus, X } from "lucide-react";
 import { listarClientes, eliminarCliente, editarCliente } from "../services/ClienteService.jsx";
 import { listarMotocicletas, crearMotocicleta, editarMotocicleta, eliminarMotocicleta } from "../services/MotocicletaService.jsx";
+import { listarOrdenes } from "../services/OrdenService.jsx";
 
 function ConsultaClientes() {
   const [clientes, setClientes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  const [ordenes, setOrdenes] = useState([]);
   
   // Estados para modal de editar
   const [modalEditar, setModalEditar] = useState(null);
@@ -23,17 +25,21 @@ function ConsultaClientes() {
   const [modalConfirmar, setModalConfirmar] = useState(null);
 
   useEffect(() => {
-    // Cargar clientes desde tu backend
-    const fetchClientes = async () => {
+    // Cargar clientes y órdenes
+    const fetchData = async () => {
       try {
-        const data = await listarClientes();
-        setClientes(data);
+        const [clientesData, ordenesData] = await Promise.all([
+          listarClientes(),
+          listarOrdenes()
+        ]);
+        setClientes(clientesData);
+        setOrdenes(ordenesData);
       } catch (error) {
-        console.error("Error al cargar clientes:", error);
-        toast.error("Error al cargar los clientes");
+        console.error("Error al cargar datos:", error);
+        toast.error("Error al cargar los datos");
       }
     };
-    fetchClientes();
+    fetchData();
   }, []);
 
   // Función para filtrar clientes
@@ -41,6 +47,23 @@ function ConsultaClientes() {
     const matchSearch =
         cliente.nombreCliente?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         cliente.numeroCliente?.includes(searchTerm);
+    
+    // Aplicar filtro por tipo
+    if (filtroTipo === "todos") {
+      return matchSearch;
+    } else if (filtroTipo === "con-orden") {
+      // Solo clientes que tienen al menos una orden
+      const tieneOrden = ordenes.some(orden => 
+        orden.cliente?.idCliente === cliente.idCliente
+      );
+      return matchSearch && tieneOrden;
+    } else if (filtroTipo === "sin-orden") {
+      // Solo clientes que NO tienen órdenes
+      const tieneOrden = ordenes.some(orden => 
+        orden.cliente?.idCliente === cliente.idCliente
+      );
+      return matchSearch && !tieneOrden;
+    }
     return matchSearch;
   });
 
@@ -196,7 +219,7 @@ function ConsultaClientes() {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                 <input
                     type="text"
-                    placeholder="Buscar por nombre, teléfono o email..."
+                    placeholder="Buscar por nombre o teléfono..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
@@ -206,11 +229,11 @@ function ConsultaClientes() {
               <select
                   value={filtroTipo}
                   onChange={(e) => setFiltroTipo(e.target.value)}
-                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                  className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent min-w-[200px]"
               >
-                <option value="todos">Todos</option>
-                <option value="cliente">Por Cliente</option>
-                <option value="orden">Por Orden de Servicio</option>
+                <option value="todos">Todos los clientes</option>
+                <option value="con-orden">Con órdenes de servicio</option>
+                <option value="sin-orden">Sin órdenes de servicio</option>
               </select>
             </div>
 

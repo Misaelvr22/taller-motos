@@ -107,7 +107,7 @@ const NuevoUsuario = () => {
     
     const handleEliminarFisico = async () => {
         try {
-            const response = await fetch(`http://localhost:8080/usuarios/eliminar/${modalEliminar}`, {
+            const response = await fetch(`${API_BASE_URL}/usuarios/eliminar/${modalEliminar}`, {
                 method: "DELETE",
                 headers: { "Content-Type": "application/json" },
             });
