@@ -18,6 +18,9 @@ function ConsultaClientes() {
     numeroCliente: ""
   });
   const [motosEditar, setMotosEditar] = useState([]);
+  
+  // Estado para modal de confirmación
+  const [modalConfirmar, setModalConfirmar] = useState(null);
 
   useEffect(() => {
     // Cargar clientes desde tu backend
@@ -42,17 +45,25 @@ function ConsultaClientes() {
   });
 
   // Función para eliminar cliente
-  const handleEliminar = async (idCliente) => {
-    if (window.confirm("¿Estás seguro de eliminar este cliente?")) {
+  const handleEliminar = (idCliente) => {
+    setModalConfirmar({ tipo: 'cliente', id: idCliente });
+  };
+  
+  const confirmarEliminacion = async () => {
+    const { tipo, id } = modalConfirmar;
+    
+    if (tipo === 'cliente') {
       try {
-        await eliminarCliente(idCliente);
-        setClientes(clientes.filter(c => c.idCliente !== idCliente));
+        await eliminarCliente(id);
+        setClientes(clientes.filter(c => c.idCliente !== id));
         toast.success("Cliente eliminado correctamente");
       } catch (error) {
         console.error("Error al eliminar cliente:", error);
         toast.error("Error al eliminar el cliente");
       }
     }
+    
+    setModalConfirmar(null);
   };
 
   // Función para abrir modal de editar
@@ -95,10 +106,16 @@ function ConsultaClientes() {
       // Actualizar cliente
       await editarCliente(editForm);
       
-      // Actualizar motocicletas existentes
+      // Procesar motocicletas
       for (const moto of motosEditar) {
         if (moto.idMotocicleta) {
+          // Actualizar moto existente
           await editarMotocicleta(moto);
+        } else {
+          // Crear nueva moto
+          if (moto.marca && moto.modelo && moto.placa) {
+            await crearMotocicleta(moto, editForm.idCliente);
+          }
         }
       }
       
@@ -121,26 +138,40 @@ function ConsultaClientes() {
     setMotosEditar(nuevasMotos);
   };
   
+  // Función para agregar nueva moto
+  const agregarNuevaMoto = () => {
+    setMotosEditar([...motosEditar, {
+      marca: "",
+      modelo: "",
+      serie: "",
+      year: "",
+      placa: "",
+      activo: true
+    }]);
+  };
   
-  const eliminarMotoEditar = async (index, idMotocicleta) => {
+  const eliminarMotoEditar = (index, idMotocicleta) => {
     if (idMotocicleta) {
-      // Si tiene ID, eliminar de la base de datos
-      if (window.confirm("¿Estás seguro de eliminar esta motocicleta?")) {
-        try {
-          await eliminarMotocicleta(idMotocicleta);
-          const nuevasMotos = motosEditar.filter((_, i) => i !== index);
-          setMotosEditar(nuevasMotos);
-          toast.success("Motocicleta eliminada correctamente");
-        } catch (error) {
-          console.error("Error al eliminar motocicleta:", error);
-          toast.error("Error al eliminar la motocicleta");
-        }
-      }
+      setModalConfirmar({ tipo: 'moto', id: idMotocicleta, index });
     } else {
       // Si no tiene ID, solo remover del array
       const nuevasMotos = motosEditar.filter((_, i) => i !== index);
       setMotosEditar(nuevasMotos);
     }
+  };
+  
+  const confirmarEliminacionMoto = async () => {
+    const { id, index } = modalConfirmar;
+    try {
+      await eliminarMotocicleta(id);
+      const nuevasMotos = motosEditar.filter((_, i) => i !== index);
+      setMotosEditar(nuevasMotos);
+      toast.success("Motocicleta eliminada correctamente");
+    } catch (error) {
+      console.error("Error al eliminar motocicleta:", error);
+      toast.error("Error al eliminar la motocicleta");
+    }
+    setModalConfirmar(null);
   };
 
   return (
@@ -291,7 +322,16 @@ function ConsultaClientes() {
 
               {/* Motocicletas */}
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">Motocicletas Registradas</h3>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold text-gray-900">Motocicletas Registradas</h3>
+                  <button
+                    onClick={agregarNuevaMoto}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Agregar Moto
+                  </button>
+                </div>
 
                 {motosEditar.length === 0 ? (
                   <p className="text-gray-500 text-sm">No hay motocicletas registradas</p>
@@ -303,12 +343,13 @@ function ConsultaClientes() {
                           <h4 className="font-medium text-gray-900">Motocicleta #{index + 1}</h4>
                           <button
                             onClick={() => eliminarMotoEditar(index, moto.idMotocicleta)}
-                            className="text-red-600 hover:text-red-800 text-sm"
+                            className="flex items-center gap-1 px-3 py-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors text-sm font-medium"
                           >
+                            <Trash2 className="w-4 h-4" />
                             Eliminar
                           </button>
                         </div>
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
                           <div>
                             <label className="block text-xs font-medium text-gray-700 mb-1">Marca</label>
                             <select
@@ -357,6 +398,16 @@ function ConsultaClientes() {
                               placeholder="ABC123"
                             />
                           </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Serie</label>
+                            <input
+                              type="text"
+                              value={moto.serie || ""}
+                              onChange={(e) => handleMotoChange(index, 'serie', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 text-sm"
+                              placeholder="XYZ123"
+                            />
+                          </div>
                         </div>
                       </div>
                     ))}
@@ -376,6 +427,36 @@ function ConsultaClientes() {
                   className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                 >
                   Guardar Cambios
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Modal de Confirmación */}
+        {modalConfirmar && (
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
+              <h3 className="text-xl font-bold text-gray-900 mb-4">
+                {modalConfirmar.tipo === 'cliente' ? '¿Eliminar Cliente?' : '¿Eliminar Motocicleta?'}
+              </h3>
+              <p className="text-gray-600 mb-6">
+                {modalConfirmar.tipo === 'cliente' 
+                  ? 'Esta acción eliminará el cliente y toda su información asociada.'
+                  : 'Esta acción eliminará la motocicleta de forma permanente.'}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => setModalConfirmar(null)}
+                  className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={modalConfirmar.tipo === 'cliente' ? confirmarEliminacion : confirmarEliminacionMoto}
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Eliminar
                 </button>
               </div>
             </div>
