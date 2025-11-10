@@ -438,12 +438,12 @@ function ConsultaClientes() {
           <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
             <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
               <h3 className="text-xl font-bold text-gray-900 mb-4">
-                {modalConfirmar.tipo === 'cliente' ? '¿Eliminar Cliente?' : '¿Eliminar Motocicleta?'}
+                {modalConfirmar.tipo === 'cliente' ? '¿Desactivar Cliente?' : '¿Desactivar Motocicleta?'}
               </h3>
               <p className="text-gray-600 mb-6">
                 {modalConfirmar.tipo === 'cliente' 
-                  ? 'Esta acción eliminará el cliente y toda su información asociada.'
-                  : 'Esta acción eliminará la motocicleta de forma permanente.'}
+                  ? 'Este cliente se desactivará pero no se eliminará permanentemente. Solo los administradores pueden eliminarlo de forma permanente.'
+                  : 'Esta motocicleta se desactivará pero no se eliminará permanentemente. Solo los administradores pueden eliminarla de forma permanente.'}
               </p>
               <div className="flex justify-end gap-3">
                 <button
@@ -456,7 +456,7 @@ function ConsultaClientes() {
                   onClick={modalConfirmar.tipo === 'cliente' ? confirmarEliminacion : confirmarEliminacionMoto}
                   className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                 >
-                  Eliminar
+                  Desactivar
                 </button>
               </div>
             </div>

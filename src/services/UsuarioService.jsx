@@ -19,9 +19,10 @@ export async function crearUsuario(usuario) {
     });
 
     if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Error del backend:", errorText);
-        throw new Error(`Error al crear usuario: ${response.status} - ${errorText}`);
+        const errorData = await response.json();
+        console.error("Error del backend:", errorData);
+        const mensaje = errorData.error || "Error al crear usuario";
+        throw new Error(mensaje);
     }
 
     return await response.json();

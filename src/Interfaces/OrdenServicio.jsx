@@ -24,6 +24,9 @@ function OrdenServicio() {
         costo: 0,
         status: "PENDIENTE"
     });
+    
+    // Estado para modal de confirmación
+    const [modalConfirmar, setModalConfirmar] = useState(null);
 
     const [orden, setOrden] = useState({
         descripcionTrabajo: "",
@@ -171,17 +174,20 @@ function OrdenServicio() {
         }
     };
 
-    const handleEliminar = async (id) => {
-        if (confirm("¿Estás seguro de eliminar esta orden?")) {
-            try {
-                await eliminarOrden(id);
-                toast.success("Orden eliminada correctamente");
-                cargarOrdenes();
-            } catch (error) {
-                console.error("Error al eliminar orden:", error);
-                toast.error("Error al eliminar orden: " + error.message);
-            }
+    const handleEliminar = (id) => {
+        setModalConfirmar(id);
+    };
+    
+    const confirmarEliminacion = async () => {
+        try {
+            await eliminarOrden(modalConfirmar);
+            toast.success("Orden eliminada correctamente");
+            cargarOrdenes();
+        } catch (error) {
+            console.error("Error al eliminar orden:", error);
+            toast.error("Error al eliminar orden: " + error.message);
         }
+        setModalConfirmar(null);
     };
 
     return (
@@ -506,6 +512,34 @@ function OrdenServicio() {
                                     className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
                                 >
                                     Guardar Cambios
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                
+                {/* Modal de Confirmación */}
+                {modalConfirmar && (
+                    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="bg-white p-6 rounded-xl w-full max-w-md shadow-2xl">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">
+                                ¿Desactivar Orden de Servicio?
+                            </h3>
+                            <p className="text-gray-600 mb-6">
+                                Esta orden de servicio se desactivará pero no se eliminará permanentemente. Solo los administradores pueden eliminarla de forma permanente.
+                            </p>
+                            <div className="flex justify-end gap-3">
+                                <button
+                                    onClick={() => setModalConfirmar(null)}
+                                    className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    onClick={confirmarEliminacion}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                                >
+                                    Desactivar
                                 </button>
                             </div>
                         </div>
