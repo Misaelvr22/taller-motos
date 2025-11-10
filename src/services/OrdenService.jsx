@@ -1,24 +1,33 @@
 const API_URL = "http://localhost:8080/orden";
 
 export async function crearOrden(orden) {
+    console.log("Datos de la orden a enviar:", orden);
+    
+    const payload = {
+        descripcionServicio: orden.descripcionTrabajo,
+        refacciones: orden.RefaccionesUtilizadas || "",
+        fechaEntrada: orden.fechaIngreso,
+        fechaEntrega: orden.fechaEntrega || null,
+        status: orden.estado || "PENDIENTE",
+        costo: parseFloat(orden.costo) || 0,
+        cliente: {
+            idCliente: parseInt(orden.idCliente)
+        },
+        motocicleta: {
+            idMotocicleta: parseInt(orden.idMotocicleta)
+        },
+        activo: true
+    };
+    
+    console.log("Payload a enviar:", JSON.stringify(payload, null, 2));
+    
     const response = await fetch(`${API_URL}/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-            descripcionServicio: orden.descripcionTrabajo,
-            refacciones: orden.RefaccionesUtilizadas || "",
-            fechaEntrada: orden.fechaIngreso,
-            fechaEntrega: orden.fechaEntrega,
-            status: orden.estado || "PENDIENTE",
-            cliente: {
-                idCliente: orden.idCliente
-            },
-            motocicleta: {
-                idMotocicleta: orden.idMotocicleta
-            },
-            activo: true
-        }),
+        body: JSON.stringify(payload),
     });
+    
+    console.log("Respuesta status:", response.status);
 
     if (!response.ok) {
         throw new Error("Error al crear orden");

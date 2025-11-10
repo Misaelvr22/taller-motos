@@ -1,11 +1,13 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Toaster } from "react-hot-toast";
 import Login from "./Interfaces/Login.jsx";
 import Dashboard from "./components/Dashboard.jsx";
 import ConsultaClientes from "./Interfaces/ConsultaClientes.jsx";
 import NuevoCliente from "./Interfaces/NuevoCliente.jsx";
 import OrdenServicio from "./Interfaces/OrdenServicio.jsx";
 import NuevoUsuario from "./Interfaces/NuevoUsuario.jsx";
+import AdminPanel from "./Interfaces/AdminPanel.jsx";
 import { getUsuario } from "./services/AuthService.jsx";
 
 // Componente para proteger rutas
@@ -37,6 +39,33 @@ function App() {
 
     return (
         <BrowserRouter>
+            <Toaster
+                position="top-right"
+                reverseOrder={false}
+                toastOptions={{
+                    duration: 3000,
+                    style: {
+                        background: '#363636',
+                        color: '#fff',
+                        padding: '16px',
+                        borderRadius: '8px',
+                    },
+                    success: {
+                        duration: 3000,
+                        iconTheme: {
+                            primary: '#10b981',
+                            secondary: '#fff',
+                        },
+                    },
+                    error: {
+                        duration: 4000,
+                        iconTheme: {
+                            primary: '#ef4444',
+                            secondary: '#fff',
+                        },
+                    },
+                }}
+            />
             <Routes>
                 {/* Ruta pública - Login */}
                 <Route
@@ -96,6 +125,16 @@ function App() {
                     element={
                         <ProtectedRoute requireAdmin={true}>
                             <NuevoUsuario />
+                        </ProtectedRoute>
+                    }
+                />
+                
+                {/* Admin Panel - Solo ADMIN */}
+                <Route
+                    path="/admin-panel"
+                    element={
+                        <ProtectedRoute requireAdmin={true}>
+                            <AdminPanel />
                         </ProtectedRoute>
                     }
                 />

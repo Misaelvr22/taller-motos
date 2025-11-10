@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from "react-router-dom";
-import { Users, UserPlus, ClipboardList, Settings, Home } from "lucide-react";
+import { Users, UserPlus, ClipboardList, Settings, Home, Database } from "lucide-react";
 import { getUsuario } from "../services/AuthService.jsx";
 
 function Sidebar() {
@@ -13,6 +13,7 @@ function Sidebar() {
         { path: "/nuevo-cliente", label: "Nuevo Cliente", icon: UserPlus, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
         { path: "/ordenes", label: "Órdenes", icon: ClipboardList, roles: ["ADMINISTRADOR", "TRABAJADOR"] },
         { path: "/usuarios", label: "Gestionar Usuarios", icon: Settings, roles: ["ADMINISTRADOR"] },
+        { path: "/admin-panel", label: "Panel Administrador", icon: Database, roles: ["ADMINISTRADOR"] },
     ];
 
     const handleNavigation = (path) => {

@@ -1,14 +1,23 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import Layout from "../components/Layout.jsx";
-import { Users, Search, Edit2, Trash2, Eye } from "lucide-react";
-import { listarClientes, eliminarCliente } from "../services/ClienteService.jsx";
+import { Users, Search, Edit2, Trash2, Plus, X } from "lucide-react";
+import { listarClientes, eliminarCliente, editarCliente } from "../services/ClienteService.jsx";
+import { listarMotocicletas, crearMotocicleta, editarMotocicleta, eliminarMotocicleta } from "../services/MotocicletaService.jsx";
 
 function ConsultaClientes() {
-  const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [filtroTipo, setFiltroTipo] = useState("todos");
+  
+  // Estados para modal de editar
+  const [modalEditar, setModalEditar] = useState(null);
+  const [editForm, setEditForm] = useState({
+    idCliente: null,
+    nombreCliente: "",
+    numeroCliente: ""
+  });
+  const [motosEditar, setMotosEditar] = useState([]);
 
   useEffect(() => {
     // Cargar clientes desde tu backend
@@ -18,7 +27,7 @@ function ConsultaClientes() {
         setClientes(data);
       } catch (error) {
         console.error("Error al cargar clientes:", error);
-        alert("Error al cargar los clientes: " + error.message);
+        toast.error("Error al cargar los clientes");
       }
     };
     fetchClientes();
@@ -38,22 +47,100 @@ function ConsultaClientes() {
       try {
         await eliminarCliente(idCliente);
         setClientes(clientes.filter(c => c.idCliente !== idCliente));
-        alert("Cliente eliminado correctamente");
+        toast.success("Cliente eliminado correctamente");
       } catch (error) {
         console.error("Error al eliminar cliente:", error);
-        alert("Error al eliminar el cliente: " + error.message);
+        toast.error("Error al eliminar el cliente");
       }
     }
   };
 
-  // Función para editar cliente
-  const handleEditar = (cliente) => {
-    navigate(`/editar-cliente/${cliente.idCliente}`);
+  // Función para abrir modal de editar
+  const abrirEditar = async (cliente) => {
+    setEditForm({
+      idCliente: cliente.idCliente,
+      nombreCliente: cliente.nombreCliente,
+      numeroCliente: cliente.numeroCliente
+    });
+    
+    // Cargar motocicletas del cliente
+    try {
+      console.log("Cargando motocicletas para cliente:", cliente.idCliente);
+      const todasMotos = await listarMotocicletas();
+      console.log("Todas las motos:", todasMotos);
+      
+      if (Array.isArray(todasMotos)) {
+        const motosDelCliente = todasMotos.filter(m => {
+          console.log("Verificando moto:", m);
+          return m.cliente?.idCliente === cliente.idCliente;
+        });
+        console.log("Motos del cliente:", motosDelCliente);
+        setMotosEditar(motosDelCliente);
+      } else {
+        console.error("La respuesta no es un array:", todasMotos);
+        setMotosEditar([]);
+      }
+    } catch (error) {
+      console.error("Error al cargar motocicletas:", error);
+      toast.error("No se pudieron cargar las motocicletas");
+      setMotosEditar([]);
+    }
+    
+    setModalEditar(cliente.idCliente);
   };
 
-  // Función para ver detalles
-  const handleVerDetalles = (cliente) => {
-    navigate(`/cliente/${cliente.idCliente}`);
+  // Función para guardar edición
+  const guardarEdicion = async () => {
+    try {
+      // Actualizar cliente
+      await editarCliente(editForm);
+      
+      // Actualizar motocicletas existentes
+      for (const moto of motosEditar) {
+        if (moto.idMotocicleta) {
+          await editarMotocicleta(moto);
+        }
+      }
+      
+      toast.success("Cliente y motocicletas actualizados correctamente");
+      setModalEditar(null);
+      setMotosEditar([]);
+      // Recargar clientes
+      const data = await listarClientes();
+      setClientes(data);
+    } catch (error) {
+      console.error("Error al editar cliente:", error);
+      toast.error("Error al editar el cliente");
+    }
+  };
+  
+  // Funciones para manejar motocicletas en el modal
+  const handleMotoChange = (index, field, value) => {
+    const nuevasMotos = [...motosEditar];
+    nuevasMotos[index] = { ...nuevasMotos[index], [field]: value };
+    setMotosEditar(nuevasMotos);
+  };
+  
+  
+  const eliminarMotoEditar = async (index, idMotocicleta) => {
+    if (idMotocicleta) {
+      // Si tiene ID, eliminar de la base de datos
+      if (window.confirm("¿Estás seguro de eliminar esta motocicleta?")) {
+        try {
+          await eliminarMotocicleta(idMotocicleta);
+          const nuevasMotos = motosEditar.filter((_, i) => i !== index);
+          setMotosEditar(nuevasMotos);
+          toast.success("Motocicleta eliminada correctamente");
+        } catch (error) {
+          console.error("Error al eliminar motocicleta:", error);
+          toast.error("Error al eliminar la motocicleta");
+        }
+      }
+    } else {
+      // Si no tiene ID, solo remover del array
+      const nuevasMotos = motosEditar.filter((_, i) => i !== index);
+      setMotosEditar(nuevasMotos);
+    }
   };
 
   return (
@@ -130,14 +217,7 @@ function ConsultaClientes() {
                                 <td className="px-6 py-4 text-sm">
                                   <div className="flex justify-center gap-2">
                                     <button
-                                        onClick={() => handleVerDetalles(cliente)}
-                                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                        title="Ver detalles"
-                                    >
-                                      <Eye className="w-4 h-4" />
-                                    </button>
-                                    <button
-                                        onClick={() => handleEditar(cliente)}
+                                        onClick={() => abrirEditar(cliente)}
                                         className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
                                         title="Editar"
                                     >
@@ -167,6 +247,140 @@ function ConsultaClientes() {
             )}
           </div>
         </div>
+
+        {/* Modal Editar Cliente */}
+        {modalEditar && (
+          <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+            <div className="bg-white p-8 rounded-xl w-full max-w-4xl shadow-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-900">Editar Cliente</h2>
+                <button
+                  onClick={() => { setModalEditar(null); setMotosEditar([]); }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Información del Cliente */}
+              <div className="mb-6 border-b border-gray-200 pb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Información del Cliente</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Nombre Completo</label>
+                    <input
+                      type="text"
+                      value={editForm.nombreCliente}
+                      onChange={(e) => setEditForm({ ...editForm, nombreCliente: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      placeholder="Ej: Juan Pérez"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">Número de Teléfono</label>
+                    <input
+                      type="tel"
+                      value={editForm.numeroCliente}
+                      onChange={(e) => setEditForm({ ...editForm, numeroCliente: e.target.value })}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                      placeholder="Ej: 3001234567"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Motocicletas */}
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Motocicletas Registradas</h3>
+
+                {motosEditar.length === 0 ? (
+                  <p className="text-gray-500 text-sm">No hay motocicletas registradas</p>
+                ) : (
+                  <div className="space-y-4">
+                    {motosEditar.map((moto, index) => (
+                      <div key={index} className="border border-gray-200 rounded-lg p-4">
+                        <div className="flex justify-between items-center mb-3">
+                          <h4 className="font-medium text-gray-900">Motocicleta #{index + 1}</h4>
+                          <button
+                            onClick={() => eliminarMotoEditar(index, moto.idMotocicleta)}
+                            className="text-red-600 hover:text-red-800 text-sm"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Marca</label>
+                            <select
+                              value={moto.marca}
+                              onChange={(e) => handleMotoChange(index, 'marca', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 text-sm"
+                            >
+                              <option value="">Seleccionar</option>
+                              <option value="Honda">Honda</option>
+                              <option value="Yamaha">Yamaha</option>
+                              <option value="Suzuki">Suzuki</option>
+                              <option value="Kawasaki">Kawasaki</option>
+                              <option value="Bajaj">Bajaj</option>
+                              <option value="KTM">KTM</option>
+                              <option value="Italika">Italika</option>
+                              <option value="Otra">Otra</option>
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Modelo</label>
+                            <input
+                              type="text"
+                              value={moto.modelo}
+                              onChange={(e) => handleMotoChange(index, 'modelo', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 text-sm"
+                              placeholder="Ej: CBR 600"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Año</label>
+                            <input
+                              type="number"
+                              value={moto.year}
+                              onChange={(e) => handleMotoChange(index, 'year', e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 text-sm"
+                              placeholder="2025"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-700 mb-1">Placa</label>
+                            <input
+                              type="text"
+                              value={moto.placa}
+                              onChange={(e) => handleMotoChange(index, 'placa', e.target.value.toUpperCase())}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 text-sm"
+                              placeholder="ABC123"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end gap-3">
+                <button
+                  onClick={() => { setModalEditar(null); setMotosEditar([]); }}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={guardarEdicion}
+                  className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
+                >
+                  Guardar Cambios
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </Layout>
   );
 }

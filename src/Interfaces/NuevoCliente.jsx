@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import Layout from "../components/Layout.jsx";
 import { Bike, Plus } from "lucide-react";
-import { crearCliente } from "../services/ClienteService.jsx";
-import { crearMotocicleta } from "../services/MotocicletaService.jsx";
+import { crearCliente, listarClientes } from "../services/ClienteService.jsx";
+import { crearMotocicleta, listarMotocicletas } from "../services/MotocicletaService.jsx";
 
 function NuevoCliente() {
     const navigate = useNavigate();
@@ -57,19 +58,80 @@ function NuevoCliente() {
 
         // Validaciones básicas
         if (!cliente.nombreCompleto || !cliente.telefono) {
-            alert("Por favor completa todos los campos del cliente");
+            toast.error("Por favor completa todos los campos del cliente");
             return;
         }
 
         // Validar motocicletas
         for (const moto of motocicletas) {
             if (!moto.marca || !moto.modelo || !moto.anio || !moto.placa) {
-                alert("Por favor completa todos los campos de las motocicletas");
+                toast.error("Por favor completa todos los campos de las motocicletas");
                 return;
             }
         }
 
         try {
+            // Validar duplicados
+            let clientesExistentes = [];
+            let motocicletasExistentes = [];
+            
+            try {
+                clientesExistentes = await listarClientes();
+            } catch (error) {
+                console.log("No hay clientes previos o error al cargar:", error);
+                clientesExistentes = [];
+            }
+            
+            try {
+                motocicletasExistentes = await listarMotocicletas();
+            } catch (error) {
+                console.log("No hay motocicletas previas o error al cargar:", error);
+                motocicletasExistentes = [];
+            }
+
+            // Verificar nombre duplicado
+            if (clientesExistentes && clientesExistentes.length > 0) {
+                const nombreDuplicado = clientesExistentes.find(
+                    c => c.nombreCliente?.toLowerCase() === cliente.nombreCompleto.toLowerCase()
+                );
+                if (nombreDuplicado) {
+                    toast.error("El nombre del cliente ya está registrado");
+                    return;
+                }
+            }
+
+            // Verificar teléfono duplicado
+            if (clientesExistentes && clientesExistentes.length > 0) {
+                const telefonoDuplicado = clientesExistentes.find(
+                    c => c.numeroCliente === cliente.telefono
+                );
+                if (telefonoDuplicado) {
+                    toast.error("El número de teléfono ya está registrado");
+                    return;
+                }
+            }
+
+            // Verificar placas duplicadas en la base de datos
+            if (motocicletasExistentes && motocicletasExistentes.length > 0) {
+                for (const moto of motocicletas) {
+                    const placaDuplicada = motocicletasExistentes.find(
+                        m => m.placa?.toLowerCase().trim() === moto.placa.toLowerCase().trim()
+                    );
+                    if (placaDuplicada) {
+                        toast.error(`La placa "${moto.placa.toUpperCase()}" ya está registrada`);
+                        return;
+                    }
+                }
+            }
+
+            // Validar placas duplicadas dentro del mismo formulario
+            const placasFormulario = motocicletas.map(m => m.placa.toLowerCase());
+            const placasUnicas = new Set(placasFormulario);
+            if (placasFormulario.length !== placasUnicas.size) {
+                toast.error("No puedes registrar motocicletas con la misma placa");
+                return;
+            }
+
             // 1. Crear cliente
             const clienteCreado = await crearCliente(cliente);
             console.log("Cliente creado:", clienteCreado);
@@ -79,12 +141,12 @@ function NuevoCliente() {
                 await crearMotocicleta(moto, clienteCreado.idCliente);
             }
 
-            alert("Cliente y motocicletas registrados correctamente");
+            toast.success("Cliente y motocicletas registrados correctamente");
             limpiarFormulario();
             navigate("/ConsultaClientes");
         } catch (error) {
             console.error("Error al registrar cliente:", error);
-            alert("Error al registrar el cliente: " + error.message);
+            toast.error("Error al registrar el cliente: " + error.message);
         }
     };
 

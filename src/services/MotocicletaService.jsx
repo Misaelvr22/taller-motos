@@ -1,5 +1,6 @@
 const API_URL = "http://localhost:8080/motocicletas";
 export async function crearMotocicleta(motocicleta, idCliente) {
+    console.log("Creando moto con idCliente:", idCliente);
     const response = await fetch(`${API_URL}/crear`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -9,11 +10,14 @@ export async function crearMotocicleta(motocicleta, idCliente) {
             year: parseInt(motocicleta.anio),
             placa: motocicleta.placa,
             serie: motocicleta.serie || "",
+            activo: true,
             cliente: {
-                idCliente: idCliente
+                idCliente: parseInt(idCliente)
             }
         }),
     });
+    
+    console.log("Respuesta crear moto:", response.status);
 
     if (!response.ok) {
         throw new Error("Error al crear motocicleta");
