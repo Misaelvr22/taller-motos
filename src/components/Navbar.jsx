@@ -3,9 +3,8 @@ import { getUsuario, logout } from "../services/AuthService.jsx";
 import { useNavigate } from "react-router-dom";
 
 function Navbar() {
-    const navigate = useNavigate();
-
-    // Intentamos obtener el usuario, pero protegemos contra errores
+    useNavigate();
+// Intentamos obtener el usuario, pero protegemos contra errores
     let user = null;
     try {
         user = getUsuario();

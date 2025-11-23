@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/clientes";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_URL = `${API_BASE_URL}/clientes`;
 export async function crearCliente(cliente) {
     const response = await fetch(`${API_URL}/crear`, {
         method: "POST",

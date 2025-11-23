@@ -1,5 +1,6 @@
+import { API_BASE_URL } from "../config/api.js";
 
-const API_URL = "http://localhost:8080/auth";
+const API_URL = `${API_BASE_URL}/auth`;
 
 export async function login(nombre_usuario, password) {
     const response = await fetch(`${API_URL}/login`, {

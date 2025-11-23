@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/orden";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_URL = `${API_BASE_URL}/orden`;
 
 export async function crearOrden(orden) {
     console.log("Datos de la orden a enviar:", orden);

@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/usuarios";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_URL = `${API_BASE_URL}/usuarios`;
 
 export async function crearUsuario(usuario) {
     const payload = {

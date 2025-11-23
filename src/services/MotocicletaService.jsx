@@ -1,4 +1,6 @@
-const API_URL = "http://localhost:8080/motocicletas";
+import { API_BASE_URL } from "../config/api.js";
+
+const API_URL = `${API_BASE_URL}/motocicletas`;
 export async function crearMotocicleta(motocicleta, idCliente) {
     console.log("Creando moto con idCliente:", idCliente);
     const response = await fetch(`${API_URL}/crear`, {
@@ -9,7 +11,6 @@ export async function crearMotocicleta(motocicleta, idCliente) {
             modelo: motocicleta.modelo,
             year: parseInt(motocicleta.anio),
             placa: motocicleta.placa,
-            serie: motocicleta.serie || "",
             activo: true,
             cliente: {
                 idCliente: parseInt(idCliente)
