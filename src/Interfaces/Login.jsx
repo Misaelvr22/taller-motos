@@ -17,9 +17,7 @@ function Login({ onLogin }) {
         setLoading(true);
 
         try {
-            console.log("Intentando login con:", user);
-            const data = await login(user, password);
-            console.log("Login exitoso, datos recibidos:", data);
+            await login(user, password);
 
             // Llamar a onLogin para actualizar el estado
             if (onLogin) {
@@ -30,7 +28,6 @@ function Login({ onLogin }) {
             navigate("/dashboard");
 
         } catch (err) {
-            console.error("Error en login:", err);
             setError(err.message || "Error al iniciar sesión");
             setLoading(false);
         }

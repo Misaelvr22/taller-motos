@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import Layout from "../components/Layout.jsx";
 import { Database, Users, Bike, Wrench, RefreshCw, Trash2, AlertTriangle, X } from "lucide-react";
+import { API_BASE_URL } from "../config/api.js";
 
 function AdminPanel() {
     const [usuarios, setUsuarios] = useState([]);
@@ -26,7 +27,7 @@ function AdminPanel() {
 
     const cargarUsuariosTodos = async () => {
         try {
-            const response = await fetch("${API_BASE_URL}/usuarios/listar-todos", {
+            const response = await fetch(`${API_BASE_URL}/usuarios/listar-todos`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -35,13 +36,13 @@ function AdminPanel() {
                 setUsuarios(data);
             }
         } catch (error) {
-            console.error("Error al cargar usuarios:", error);
+            toast.error(`Error al cargar usuarios: ${error.message || 'Error desconocido'}`);
         }
     };
 
     const cargarClientesTodos = async () => {
         try {
-            const response = await fetch("${API_BASE_URL}/clientes/listar-todos", {
+            const response = await fetch(`${API_BASE_URL}/clientes/listar-todos`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -49,14 +50,14 @@ function AdminPanel() {
                 const data = await response.json();
                 setClientes(data);
             }
-        } catch (error) {
-            console.error("Error al cargar clientes:", error);
+        } catch  {
+            toast.error('Error al cargar clientes: ');
         }
     };
 
     const cargarMotocicletasTodos = async () => {
         try {
-            const response = await fetch("${API_BASE_URL}/motocicletas/listar-todos", {
+            const response = await fetch(`${API_BASE_URL}/motocicletas/listar-todos`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -64,14 +65,14 @@ function AdminPanel() {
                 const data = await response.json();
                 setMotocicletas(data);
             }
-        } catch (error) {
-            console.error("Error al cargar motocicletas:", error);
+        } catch {
+            toast.error('Error al cargar motocicletas: ');
         }
     };
 
     const cargarOrdenesTodos = async () => {
         try {
-            const response = await fetch("${API_BASE_URL}/orden/listar-todos", {
+            const response = await fetch(`${API_BASE_URL}/orden/listar-todos`, {
                 method: "GET",
                 headers: { "Content-Type": "application/json" },
             });
@@ -79,8 +80,8 @@ function AdminPanel() {
                 const data = await response.json();
                 setOrdenes(data);
             }
-        } catch (error) {
-            console.error("Error al cargar órdenes:", error);
+        } catch  {
+            toast.error('Error al cargar motocicletas: ');
         }
     };
 
@@ -94,11 +95,11 @@ function AdminPanel() {
                 toast.success("Usuario reactivado");
                 cargarUsuariosTodos();
             }
-        } catch (error) {
-            toast.error("Error al reactivar usuario");
+        } catch  {
+            toast.error('Error al reactivar usuario: ');
         }
     };
-    
+
     const eliminarUsuarioPermanente = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/usuarios/eliminar/${modalEliminar.id}`, {
@@ -109,9 +110,14 @@ function AdminPanel() {
                 toast.success("Usuario eliminado permanentemente");
                 setModalEliminar(null);
                 cargarUsuariosTodos();
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || `Error al eliminar usuario (${response.status})`);
+                setModalEliminar(null);
             }
-        } catch (error) {
-            toast.error("Error al eliminar usuario");
+        } catch  {
+            toast.error('Error al eliminar usuario: ');
+            setModalEliminar(null);
         }
     };
 
@@ -125,11 +131,11 @@ function AdminPanel() {
                 toast.success("Cliente reactivado");
                 cargarClientesTodos();
             }
-        } catch (error) {
-            toast.error("Error al reactivar cliente");
+        } catch  {
+            toast.error('Error al reactivar cliente: ');
         }
     };
-    
+
     const eliminarClientePermanente = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/clientes/eliminar/${modalEliminar.id}`, {
@@ -140,9 +146,50 @@ function AdminPanel() {
                 toast.success("Cliente eliminado permanentemente");
                 setModalEliminar(null);
                 cargarClientesTodos();
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || `Error al eliminar cliente (${response.status})`);
+                setModalEliminar(null);
             }
-        } catch (error) {
-            toast.error("Error al eliminar cliente");
+        } catch  {
+            toast.error('Error al eliminar cliente: ');
+            setModalEliminar(null);
+        }
+    };
+
+    const reactivarMotocicleta = async (id) => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/motocicletas/reactivar/${id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+            });
+            if (response.ok) {
+                toast.success("Motocicleta reactivada");
+                cargarMotocicletasTodos();
+            }
+        } catch {
+            toast.error('Error al reactivar motocicleta:');
+        }
+    };
+
+    const eliminarMotocicletaPermanente = async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/motocicletas/eliminar/${modalEliminar.id}`, {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+            });
+            if (response.ok) {
+                toast.success("Motocicleta eliminada permanentemente");
+                setModalEliminar(null);
+                cargarMotocicletasTodos();
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || `Error al eliminar motocicleta (${response.status})`);
+                setModalEliminar(null);
+            }
+        } catch {
+            toast.error('Error al eliminar motocicleta: ');
+            setModalEliminar(null);
         }
     };
 
@@ -156,11 +203,11 @@ function AdminPanel() {
                 toast.success("Orden reactivada");
                 cargarOrdenesTodos();
             }
-        } catch (error) {
-            toast.error("Error al reactivar orden");
+        } catch  {
+            toast.error('Error al reactivar orden:');
         }
     };
-    
+
     const eliminarOrdenPermanente = async () => {
         try {
             const response = await fetch(`${API_BASE_URL}/orden/eliminar/${modalEliminar.id}`, {
@@ -171,21 +218,46 @@ function AdminPanel() {
                 toast.success("Orden eliminada permanentemente");
                 setModalEliminar(null);
                 cargarOrdenesTodos();
+            } else {
+                const errorData = await response.json().catch(() => ({}));
+                toast.error(errorData.message || `Error al eliminar orden (${response.status})`);
+                setModalEliminar(null);
             }
-        } catch (error) {
-            toast.error("Error al eliminar orden");
+        } catch {
+            toast.error('Error al eliminar orden:ss');
+            setModalEliminar(null);
         }
     };
-    
+
     const abrirModalEliminar = (tipo, id, nombre) => {
+        // ⭐ 1. Bloquear la eliminación del administrador por defecto (ID 1)
+        if (tipo === 'usuario' && id === 1) {
+            toast.error('No se puede eliminar el administrador por defecto del sistema (ID 1).');
+            return;
+        }
+
+        // 2. Si es un usuario, verificar si es el último administrador activo (solo si el ID no es 1)
+        if (tipo === 'usuario') {
+            const usuario = usuarios.find(u => u.idUsuario === id);
+
+            if (usuario && usuario.rol === 'ADMINISTRADOR') {
+                const adminsActivos = usuarios.filter(u => u.rol === 'ADMINISTRADOR' && u.activo).length;
+                if (adminsActivos <= 1) {
+                    toast.error('No se puede eliminar el último administrador activo del sistema.');
+                    return;
+                }
+            }
+        }
         setModalEliminar({ tipo, id, nombre });
     };
-    
+
     const confirmarEliminacion = () => {
         if (modalEliminar.tipo === 'usuario') {
             eliminarUsuarioPermanente();
         } else if (modalEliminar.tipo === 'cliente') {
             eliminarClientePermanente();
+        } else if (modalEliminar.tipo === 'motocicleta') {
+            eliminarMotocicletaPermanente();
         } else if (modalEliminar.tipo === 'orden') {
             eliminarOrdenPermanente();
         }
@@ -263,34 +335,41 @@ function AdminPanel() {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                    </tr>
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Usuario</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rol</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {usuarios.map((u) => (
+                                {usuarios.map((u) => {
+                                    const isDefaultAdmin = u.idUsuario === 1;
+                                    const isAdmin = u.rol === 'ADMINISTRADOR';
+                                    const activeAdminsCount = usuarios.filter(usr => usr.rol === 'ADMINISTRADOR' && usr.activo).length;
+                                    const isLastAdmin = isAdmin && activeAdminsCount <= 1;
+                                    const isDisabled = isDefaultAdmin || isLastAdmin;
+
+                                    return (
                                         <tr key={u.idUsuario} className={!u.activo ? "bg-red-50" : ""}>
                                             <td className="px-6 py-4 text-sm text-gray-900">{u.idUsuario}</td>
                                             <td className="px-6 py-4 text-sm font-medium text-gray-900">{u.nombreUsuario}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600">{u.nombrePila} {u.apellidoCompleto}</td>
                                             <td className="px-6 py-4 text-sm text-gray-600">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                    u.rol === 'ADMINISTRADOR' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                                }`}>
-                                                    {u.rol}
-                                                </span>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                        isAdmin ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                                    }`}>
+                                                        {u.rol}
+                                                    </span>
                                             </td>
                                             <td className="px-6 py-4 text-sm">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                                                    u.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                    {u.activo ? 'Activo' : 'Inactivo'}
-                                                </span>
+                                                    <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                        u.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {u.activo ? 'Activo' : 'Inactivo'}
+                                                    </span>
                                             </td>
                                             <td className="px-6 py-4 text-center">
                                                 <div className="flex justify-center gap-2">
@@ -304,15 +383,25 @@ function AdminPanel() {
                                                     )}
                                                     <button
                                                         onClick={() => abrirModalEliminar('usuario', u.idUsuario, u.nombreUsuario)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Eliminar permanentemente"
+                                                        className={`p-2 rounded-lg transition-colors ${
+                                                            isDisabled
+                                                                ? 'text-gray-400 cursor-not-allowed'
+                                                                : 'text-red-600 hover:bg-red-50'
+                                                        }`}
+                                                        title={isDefaultAdmin
+                                                            ? 'No se puede eliminar el administrador por defecto (ID 1)'
+                                                            : isLastAdmin
+                                                                ? 'No se puede eliminar el último administrador activo'
+                                                                : 'Eliminar permanentemente'}
+                                                        disabled={isDisabled}
                                                     >
                                                         <Trash2 className="w-4 h-4" />
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                    ))}
+                                    )
+                                })}
                                 </tbody>
                             </table>
                         </div>
@@ -323,48 +412,48 @@ function AdminPanel() {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                    </tr>
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nombre</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teléfono</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {clientes.map((c) => (
-                                        <tr key={c.idCliente} className={!c.activo ? "bg-red-50" : ""}>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{c.idCliente}</td>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{c.nombreCliente}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{c.numeroCliente}</td>
-                                            <td className="px-6 py-4 text-sm">
+                                {clientes.map((c) => (
+                                    <tr key={c.idCliente} className={!c.activo ? "bg-red-50" : ""}>
+                                        <td className="px-6 py-4 text-sm text-gray-900">{c.idCliente}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{c.nombreCliente}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{c.numeroCliente}</td>
+                                        <td className="px-6 py-4 text-sm">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                                     c.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                                 }`}>
                                                     {c.activo ? 'Activo' : 'Inactivo'}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    {!c.activo && (
-                                                        <button
-                                                            onClick={() => reactivarCliente(c.idCliente)}
-                                                            className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
-                                                        >
-                                                            Reactivar
-                                                        </button>
-                                                    )}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                {!c.activo && (
                                                     <button
-                                                        onClick={() => abrirModalEliminar('cliente', c.idCliente, c.nombreCliente)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Eliminar permanentemente"
+                                                        onClick={() => reactivarCliente(c.idCliente)}
+                                                        className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        Reactivar
                                                     </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                )}
+                                                <button
+                                                    onClick={() => abrirModalEliminar('cliente', c.idCliente, c.nombreCliente)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Eliminar permanentemente"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
                         </div>
@@ -375,36 +464,56 @@ function AdminPanel() {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marca</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Año</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                    </tr>
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Marca</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Modelo</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Año</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Placa</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {motocicletas.map((m) => (
-                                        <tr key={m.idMotocicleta} className={!m.activo ? "bg-red-50" : ""}>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{m.idMotocicleta}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{m.marca}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{m.modelo}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">{m.year}</td>
-                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.placa}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
-                                                {m.cliente?.nombreCliente || 'Sin cliente'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
+                                {motocicletas.map((m) => (
+                                    <tr key={m.idMotocicleta} className={!m.activo ? "bg-red-50" : ""}>
+                                        <td className="px-6 py-4 text-sm text-gray-900">{m.idMotocicleta}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">{m.marca}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{m.modelo}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">{m.year}</td>
+                                        <td className="px-6 py-4 text-sm font-medium text-gray-900">{m.placa}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {m.cliente?.nombreCliente || 'Sin cliente'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                                     m.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                                 }`}>
                                                     {m.activo ? 'Activo' : 'Inactivo'}
                                                 </span>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                {!m.activo && (
+                                                    <button
+                                                        onClick={() => reactivarMotocicleta(m.idMotocicleta)}
+                                                        className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
+                                                    >
+                                                        Reactivar
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => abrirModalEliminar('motocicleta', m.idMotocicleta, `${m.marca} ${m.modelo} - ${m.placa}`)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Eliminar permanentemente"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
                         </div>
@@ -415,135 +524,107 @@ function AdminPanel() {
                         <div className="overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motocicleta</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Servicio</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Costo</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
-                                        <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
-                                    </tr>
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Cliente</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Motocicleta</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Servicio</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Costo</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estado</th>
+                                    <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Acciones</th>
+                                </tr>
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
-                                    {ordenes.map((o) => (
-                                        <tr key={o.idOrden} className={!o.activo ? "bg-red-50" : ""}>
-                                            <td className="px-6 py-4 text-sm text-gray-900">{o.idOrden}</td>
-                                            <td className="px-6 py-4 text-sm text-gray-900">
-                                                {o.cliente?.nombreCliente || 'Sin cliente'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600">
-                                                {o.motocicleta ? `${o.motocicleta.marca} ${o.motocicleta.modelo}` : 'Sin moto'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
-                                                {o.descripcionServicio}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm text-gray-900 font-medium">
-                                                ${o.costo ? o.costo.toFixed(2) : '0.00'}
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
+                                {ordenes.map((o) => (
+                                    <tr key={o.idOrden} className={!o.activo ? "bg-red-50" : ""}>
+                                        <td className="px-6 py-4 text-sm text-gray-900">{o.idOrden}</td>
+                                        <td className="px-6 py-4 text-sm text-gray-900">
+                                            {o.cliente?.nombreCliente || 'Sin cliente'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                            {o.motocicleta ? `${o.motocicleta.marca} ${o.motocicleta.modelo}` : 'Sin moto'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
+                                            {o.descripcionServicio}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm text-gray-900 font-medium">
+                                            ${o.costo ? o.costo.toFixed(2) : '0.00'}
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                                     o.status === 'COMPLETADO' ? 'bg-green-100 text-green-800' :
-                                                    o.status === 'EN_PROCESO' ? 'bg-blue-100 text-blue-800' :
-                                                    o.status === 'CANCELADO' ? 'bg-gray-100 text-gray-800' :
-                                                    'bg-yellow-100 text-yellow-800'
+                                                        o.status === 'EN_PROCESO' ? 'bg-blue-100 text-blue-800' :
+                                                            o.status === 'CANCELADO' ? 'bg-gray-100 text-gray-800' :
+                                                                'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                     {o.status}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-sm">
+                                        </td>
+                                        <td className="px-6 py-4 text-sm">
                                                 <span className={`px-3 py-1 rounded-full text-xs font-medium ${
                                                     o.activo ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                                                 }`}>
                                                     {o.activo ? 'Activo' : 'Inactivo'}
                                                 </span>
-                                            </td>
-                                            <td className="px-6 py-4 text-center">
-                                                <div className="flex justify-center gap-2">
-                                                    {!o.activo && (
-                                                        <button
-                                                            onClick={() => reactivarOrden(o.idOrden)}
-                                                            className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
-                                                        >
-                                                            Reactivar
-                                                        </button>
-                                                    )}
+                                        </td>
+                                        <td className="px-6 py-4 text-center">
+                                            <div className="flex justify-center gap-2">
+                                                {!o.activo && (
                                                     <button
-                                                        onClick={() => abrirModalEliminar('orden', o.idOrden, `Orden #${o.idOrden}`)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="Eliminar permanentemente"
+                                                        onClick={() => reactivarOrden(o.idOrden)}
+                                                        className="px-3 py-1 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700"
                                                     >
-                                                        <Trash2 className="w-4 h-4" />
+                                                        Reactivar
                                                     </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
+                                                )}
+                                                <button
+                                                    onClick={() => abrirModalEliminar('orden', o.idOrden, `Orden #${o.idOrden}`)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Eliminar permanentemente"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
                                 </tbody>
                             </table>
                         </div>
                     )}
                 </div>
-                
-                {/* Modal de Confirmación */}
+
+                {/* Modal Eliminar */}
                 {modalEliminar && (
-                    <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50 backdrop-blur-sm">
-                        <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl border-2 border-red-200 animate-in">
-                            <div className="flex items-center justify-between mb-6">
+                    <div className="fixed inset-0 bg-black/50 flex justify-center items-center z-50">
+                        <div className="bg-white p-8 rounded-xl w-full max-w-md shadow-2xl">
+                            <div className="flex items-center justify-between mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-3 bg-red-100 rounded-full">
-                                        <AlertTriangle className="w-6 h-6 text-red-600" />
-                                    </div>
-                                    <h2 className="text-2xl font-bold text-gray-900">Confirmación</h2>
+                                    <AlertTriangle className="w-8 h-8 text-red-500" />
+                                    <h2 className="text-2xl font-bold text-gray-900">Confirmar Eliminación</h2>
                                 </div>
-                                <button
-                                    onClick={() => setModalEliminar(null)}
-                                    className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
-                                >
-                                    <X className="w-5 h-5 text-gray-500" />
+                                <button onClick={() => setModalEliminar(null)} className="p-1 hover:bg-gray-100 rounded-lg transition-colors">
+                                    <X className="w-5 h-5" />
                                 </button>
                             </div>
-                            
-                            <div className="mb-6">
-                                <p className="text-gray-700 mb-4 text-lg">
-                                    ¿Estás seguro de eliminar <span className="font-bold text-red-600">permanentemente</span> este registro?
-                                </p>
-                                
-                                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg mb-4">
-                                    <p className="text-sm font-medium text-red-800">
-                                        {modalEliminar.nombre}
-                                    </p>
-                                    <p className="text-xs text-red-600 mt-1">
-                                        ID: {modalEliminar.id}
-                                    </p>
-                                </div>
-                                
-                                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                                    <div className="flex gap-2">
-                                        <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
-                                        <div>
-                                            <p className="text-sm font-semibold text-yellow-800 mb-1">Advertencia</p>
-                                            <p className="text-xs text-yellow-700">
-                                                Esta acción eliminará el registro <strong>permanentemente</strong> de la base de datos y <strong>NO se puede deshacer</strong>.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="flex gap-3">
+
+                            <p className="text-gray-600 mb-6">
+                                ¿Estás seguro que deseas eliminar **permanentemente** el registro: **{modalEliminar.nombre}** (ID: {modalEliminar.id})? Esta acción no se puede deshacer.
+                            </p>
+
+                            <div className="flex justify-end gap-3">
                                 <button
                                     onClick={() => setModalEliminar(null)}
-                                    className="flex-1 px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-all font-medium"
+                                    className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     onClick={confirmarEliminacion}
-                                    className="flex-1 px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all font-medium shadow-lg shadow-red-200 hover:shadow-red-300"
+                                    className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                                 >
-                                    Eliminar Permanentemente
+                                    Eliminar Ahora
                                 </button>
                             </div>
                         </div>

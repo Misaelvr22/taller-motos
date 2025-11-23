@@ -6,18 +6,39 @@ import { Bike, Plus } from "lucide-react";
 import { crearCliente, listarClientes } from "../services/ClienteService.jsx";
 import { crearMotocicleta, listarMotocicletas } from "../services/MotocicletaService.jsx";
 
+// Constantes
+const MARCAS_MOTOS = [
+    "Honda", "Yamaha", "Suzuki", "Kawasaki",
+    "Bajaj", "KTM", "Italika", "Otra"
+];
+
+const MIN_YEAR = 1900;
+const CURRENT_YEAR = new Date().getFullYear();
+
+// Componente: InputField (sin cambios)
+const InputField = ({ label, required, ...props }) => (
+    <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+            {label} {required && <span className="text-red-500">*</span>}
+        </label>
+        <input
+            {...props}
+            className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50`}
+        />
+    </div>
+);
+
+
 function NuevoCliente() {
     const navigate = useNavigate();
 
-    // Estado del cliente
     const [cliente, setCliente] = useState({
         nombreCompleto: "",
         telefono: ""
     });
 
-    // Estado de las motocicletas
     const [motocicletas, setMotocicletas] = useState([
-        { id: 1, marca: "", modelo: "", anio: "", placa: "" }
+        { id: Date.now(), marca: "", modelo: "", year: "", placa: "" }
     ]);
 
     const handleClienteChange = (e) => {
@@ -35,10 +56,9 @@ function NuevoCliente() {
     };
 
     const agregarMoto = () => {
-        const nuevaId = Math.max(...motocicletas.map(m => m.id)) + 1;
         setMotocicletas(prev => [
             ...prev,
-            { id: nuevaId, marca: "", modelo: "", anio: "", placa: "" }
+            { id: Date.now(), marca: "", modelo: "", year: "", placa: "" }
         ]);
     };
 
@@ -50,117 +70,136 @@ function NuevoCliente() {
 
     const limpiarFormulario = () => {
         setCliente({ nombreCompleto: "", telefono: "" });
-        setMotocicletas([{ id: 1, marca: "", modelo: "", anio: "", placa: "" }]);
+        setMotocicletas([{ id: Date.now(), marca: "", modelo: "", year: "", placa: "" }]);
+    };
+
+    const validarFormulario = (clienteData, motosData, clientesExistentes, motocicletasExistentes) => {
+
+        const nombreLimpio = clienteData.nombreCompleto.trim();
+        const telefonoLimpio = clienteData.telefono.trim();
+
+        // 1. VALIDACIÓN DEL CLIENTE
+        if (!nombreLimpio) {
+            throw new Error("El nombre del cliente no puede estar vacío.");
+        }
+        if (!telefonoLimpio) {
+            throw new Error("El número de teléfono no puede estar vacío.");
+        }
+        if (!/^\d+$/.test(telefonoLimpio)) {
+            throw new Error("El teléfono debe contener solo números.");
+        }
+
+        // VALIDACIÓN DE 10 DÍGITOS
+        if (telefonoLimpio.length !== 10) {
+            throw new Error("El número de teléfono debe tener exactamente 10 dígitos.");
+        }
+
+        // 2. VALIDACIÓN DE MOTOCICLETAS (Campos y Rango de Año)
+        const placasFormulario = [];
+
+        for (const moto of motosData) {
+            const marcaLimpia = moto.marca?.trim();
+            const modeloLimpio = moto.modelo?.trim();
+            const placaLimpia = moto.placa?.trim();
+            const yearValue = parseInt(moto.year);
+
+            if (!marcaLimpia) {
+                throw new Error(`La motocicleta #${motosData.indexOf(moto) + 1} debe tener una marca seleccionada.`);
+            }
+            if (!modeloLimpio) {
+                throw new Error(`El modelo de la motocicleta #${motosData.indexOf(moto) + 1} no puede estar vacío.`);
+            }
+            if (!placaLimpia) {
+                throw new Error(`La placa de la motocicleta #${motosData.indexOf(moto) + 1} no puede estar vacía.`);
+            }
+            if (!moto.year.toString().trim() || isNaN(yearValue)) {
+                throw new Error(`El año de la motocicleta #${motosData.indexOf(moto) + 1} no es válido.`);
+            }
+            if (yearValue < MIN_YEAR || yearValue > CURRENT_YEAR) {
+                throw new Error(`El año de la motocicleta #${motosData.indexOf(moto) + 1} debe estar entre ${MIN_YEAR} y ${CURRENT_YEAR}.`);
+            }
+
+            // 3. VALIDACIÓN DE DUPLICADOS EN FORMULARIO
+            const placaLowerCase = placaLimpia.toLowerCase();
+            if (placasFormulario.includes(placaLowerCase)) {
+                throw new Error(`No puedes registrar motocicletas con la misma placa ("${placaLimpia.toUpperCase()}") en el mismo formulario.`);
+            }
+            placasFormulario.push(placaLowerCase);
+        }
+
+        // 4. VALIDACIÓN DE DUPLICADOS EN BASE DE DATOS
+
+        // Cliente (Nombre)
+        if (clientesExistentes.some(c => c.nombreCliente?.toLowerCase().trim() === nombreLimpio.toLowerCase())) {
+            throw new Error("El nombre del cliente ya está registrado en la base de datos.");
+        }
+        // Cliente (Teléfono)
+        if (clientesExistentes.some(c => c.numeroCliente?.trim() === telefonoLimpio)) {
+            throw new Error("El número de teléfono ya está registrado en la base de datos.");
+        }
+        // Motocicletas (Placa)
+        for (const moto of motosData) {
+            const placaLimpia = moto.placa.trim().toLowerCase();
+            if (motocicletasExistentes.some(m => m.placa?.toLowerCase().trim() === placaLimpia)) {
+                throw new Error(`La placa "${moto.placa.toUpperCase()}" ya está registrada en otro cliente.`);
+            }
+        }
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validaciones básicas
-        if (!cliente.nombreCompleto || !cliente.telefono) {
-            toast.error("Por favor completa todos los campos del cliente");
-            return;
-        }
-
-        // Validar motocicletas
-        for (const moto of motocicletas) {
-            if (!moto.marca || !moto.modelo || !moto.anio || !moto.placa) {
-                toast.error("Por favor completa todos los campos de las motocicletas");
-                return;
-            }
-        }
-
         try {
-            // Validar duplicados
-            let clientesExistentes = [];
-            let motocicletasExistentes = [];
-            
-            try {
-                clientesExistentes = await listarClientes();
-            } catch (error) {
-                console.log("No hay clientes previos o error al cargar:", error);
-                clientesExistentes = [];
-            }
-            
-            try {
-                motocicletasExistentes = await listarMotocicletas();
-            } catch (error) {
-                console.log("No hay motocicletas previas o error al cargar:", error);
-                motocicletasExistentes = [];
-            }
+            // Cargar datos existentes para validación
+            const [clientesExistentes, motocicletasExistentes] = await Promise.all([
+                listarClientes().catch(() => []),
+                listarMotocicletas().catch(() => [])
+            ]);
 
-            // Verificar nombre duplicado
-            if (clientesExistentes && clientesExistentes.length > 0) {
-                const nombreDuplicado = clientesExistentes.find(
-                    c => c.nombreCliente?.toLowerCase() === cliente.nombreCompleto.toLowerCase()
-                );
-                if (nombreDuplicado) {
-                    toast.error("El nombre del cliente ya está registrado");
-                    return;
-                }
-            }
+            // Ejecutar todas las validaciones
+            validarFormulario(cliente, motocicletas, clientesExistentes, motocicletasExistentes);
 
-            // Verificar teléfono duplicado
-            if (clientesExistentes && clientesExistentes.length > 0) {
-                const telefonoDuplicado = clientesExistentes.find(
-                    c => c.numeroCliente === cliente.telefono
-                );
-                if (telefonoDuplicado) {
-                    toast.error("El número de teléfono ya está registrado");
-                    return;
-                }
-            }
+            // Si todo es válido, proceder con el registro
+            // CORRECCIÓN: Usamos los nombres de campo del ESTADO para enviar al servicio
+            const clienteLimpio = {
+                nombreCompleto: cliente.nombreCompleto.trim(), // Ajustado al nombre del estado
+                telefono: cliente.telefono.trim() // Ajustado al nombre del estado
+            };
 
-            // Verificar placas duplicadas en la base de datos
-            if (motocicletasExistentes && motocicletasExistentes.length > 0) {
-                for (const moto of motocicletas) {
-                    const placaDuplicada = motocicletasExistentes.find(
-                        m => m.placa?.toLowerCase().trim() === moto.placa.toLowerCase().trim()
-                    );
-                    if (placaDuplicada) {
-                        toast.error(`La placa "${moto.placa.toUpperCase()}" ya está registrada`);
-                        return;
-                    }
-                }
-            }
+            // Crear cliente
+            // Si esto da error, es muy probable que tu API requiera nombreCliente/numeroCliente
+            const clienteCreado = await crearCliente(clienteLimpio);
 
-            // Validar placas duplicadas dentro del mismo formulario
-            const placasFormulario = motocicletas.map(m => m.placa.toLowerCase());
-            const placasUnicas = new Set(placasFormulario);
-            if (placasFormulario.length !== placasUnicas.size) {
-                toast.error("No puedes registrar motocicletas con la misma placa");
-                return;
-            }
-
-            // 1. Crear cliente
-            const clienteCreado = await crearCliente(cliente);
-            console.log("Cliente creado:", clienteCreado);
-
-            // 2. Crear motocicletas asociadas al cliente
-            for (const moto of motocicletas) {
-                await crearMotocicleta(moto, clienteCreado.idCliente);
-            }
+            // Crear motocicletas con valores limpios
+            await Promise.all(motocicletas.map(async (moto) => {
+                const motoLimpia = {
+                    marca: moto.marca.trim(),
+                    modelo: moto.modelo.trim(),
+                    year: parseInt(moto.year),
+                    placa: moto.placa.trim().toUpperCase()
+                };
+                await crearMotocicleta(motoLimpia, clienteCreado.idCliente);
+            }));
 
             toast.success("Cliente y motocicletas registrados correctamente");
             limpiarFormulario();
             navigate("/ConsultaClientes");
+
         } catch (error) {
-            console.error("Error al registrar cliente:", error);
-            toast.error("Error al registrar el cliente: " + error.message);
+            // Si el error no es una validación, puede ser un error de la API
+            toast.error(`Error al registrar el cliente: ${error.message || 'Error desconocido del servicio.'}`);
         }
     };
 
-
+    // ... (El resto del componente de renderizado es el mismo)
     return (
         <Layout>
             <div className="max-w-7xl mx-auto px-6 py-8">
-                {/* Title Section */}
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold text-gray-900 mb-2">Registro de Nuevo Cliente</h2>
                     <p className="text-gray-600">Completa la información del cliente y sus motocicletas</p>
                 </div>
 
-                {/* Content Area */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-8">
                     <h3 className="text-xl font-semibold text-gray-900 mb-8">Registro de Nuevo Cliente</h3>
 
@@ -168,37 +207,27 @@ function NuevoCliente() {
                         {/* Información del Cliente */}
                         <div className="mb-8 border border-gray-200 rounded-lg p-6">
                             <h4 className="text-lg font-medium text-gray-900 mb-6">Información del Cliente</h4>
-
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Nombre Completo <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="text"
-                                        name="nombreCompleto"
-                                        value={cliente.nombreCompleto}
-                                        onChange={handleClienteChange}
-                                        placeholder="Ej: Juan Pérez González"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50"
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                                        Número de Teléfono <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="tel"
-                                        name="telefono"
-                                        value={cliente.telefono}
-                                        onChange={handleClienteChange}
-                                        placeholder="Ej: 3001234567"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50"
-                                        required
-                                    />
-                                </div>
+                                <InputField
+                                    label="Nombre Completo"
+                                    required
+                                    type="text"
+                                    name="nombreCompleto"
+                                    value={cliente.nombreCompleto}
+                                    onChange={handleClienteChange}
+                                    placeholder="Ej: Juan Pérez González"
+                                />
+                                <InputField
+                                    label="Número de Teléfono"
+                                    required
+                                    type="tel"
+                                    name="telefono"
+                                    value={cliente.telefono}
+                                    onChange={handleClienteChange}
+                                    placeholder="Ej: 3001234567"
+                                    minLength="10"
+                                    maxLength="10"
+                                />
                             </div>
                         </div>
 
@@ -233,7 +262,6 @@ function NuevoCliente() {
                                             </button>
                                         )}
                                     </div>
-
                                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -246,60 +274,37 @@ function NuevoCliente() {
                                                 required
                                             >
                                                 <option value="">Seleccionar marca</option>
-                                                <option value="Honda">Honda</option>
-                                                <option value="Yamaha">Yamaha</option>
-                                                <option value="Suzuki">Suzuki</option>
-                                                <option value="Kawasaki">Kawasaki</option>
-                                                <option value="Bajaj">Bajaj</option>
-                                                <option value="KTM">KTM</option>
-                                                <option value="Italika">Italika</option>
-                                                <option value="Otra">Otra</option>
+                                                {MARCAS_MOTOS.map(marca => (
+                                                    <option key={marca} value={marca}>{marca}</option>
+                                                ))}
                                             </select>
                                         </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Modelo <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={moto.modelo}
-                                                onChange={(e) => handleMotoChange(moto.id, "modelo", e.target.value)}
-                                                placeholder="Ej: CBR 600"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Año <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="number"
-                                                value={moto.anio}
-                                                onChange={(e) => handleMotoChange(moto.id, "anio", e.target.value)}
-                                                placeholder="2025"
-                                                min="1900"
-                                                max="2100"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50"
-                                                required
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-2">
-                                                Placa <span className="text-red-500">*</span>
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={moto.placa}
-                                                onChange={(e) => handleMotoChange(moto.id, "placa", e.target.value.toUpperCase())}
-                                                placeholder="ABC123"
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent bg-gray-50"
-                                                required
-                                            />
-                                        </div>
+                                        <InputField
+                                            label="Modelo"
+                                            required
+                                            type="text"
+                                            value={moto.modelo}
+                                            onChange={(e) => handleMotoChange(moto.id, "modelo", e.target.value)}
+                                            placeholder="Ej: CBR 600"
+                                        />
+                                        <InputField
+                                            label="Año"
+                                            required
+                                            type="number"
+                                            value={moto.year}
+                                            onChange={(e) => handleMotoChange(moto.id, "year", e.target.value)}
+                                            placeholder={CURRENT_YEAR.toString()}
+                                            min={MIN_YEAR}
+                                            max={CURRENT_YEAR}
+                                        />
+                                        <InputField
+                                            label="Placa"
+                                            required
+                                            type="text"
+                                            value={moto.placa}
+                                            onChange={(e) => handleMotoChange(moto.id, "placa", e.target.value.toUpperCase())}
+                                            placeholder="ABC123"
+                                        />
                                     </div>
                                 </div>
                             ))}
