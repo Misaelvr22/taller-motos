@@ -59,9 +59,10 @@ export async function editarUsuario(usuario) {
     });
 
     if (!response.ok) {
-        throw new Error("Error al editar usuario");
+        const errorData = await response.json();
+        console.error("Error del backend:", errorData);
+        throw new Error(errorData.error|| "Error al editar usuario");
     }
-
     return await response.json();
 }
 

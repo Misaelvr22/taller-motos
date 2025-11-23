@@ -66,8 +66,8 @@ const NuevoUsuario = () => {
             toast.success("Usuario creado correctamente");
             setForm({ username: "", nombre: "", apellido: "", password: "", rol: "TRABAJADOR" });
             cargarUsuarios();
-        } catch {
-            toast.error('Error al crear usuario');
+        } catch (error){
+            toast.error(error.message || 'Error al crear usuario');
         }
     };
 
@@ -140,8 +140,8 @@ const NuevoUsuario = () => {
             toast.success("Usuario actualizado correctamente");
             cerrarEditar();
             cargarUsuarios();
-        } catch {
-            toast.error('Error al editar usuario');
+        } catch (error) {
+            toast.error(error.message || 'Error al editar usuario');
         }
     };
 
@@ -391,6 +391,7 @@ const NuevoUsuario = () => {
                                     <label className="block text-sm font-medium text-gray-700 mb-2">Nombre de Usuario</label>
                                     <input
                                         type="text"
+                                        disabled={true}
                                         placeholder="Nombre de usuario"
                                         value={editForm.nombreUsuario}
                                         onChange={(e) =>
