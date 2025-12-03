@@ -4,7 +4,7 @@ import Layout from "../components/Layout.jsx";
 import { Database, Users, Bike, Wrench, RefreshCw, Trash2, AlertTriangle, X } from "lucide-react";
 import { API_BASE_URL } from "../config/api.js";
 
-function AdminPanel() {
+function AdminPanel() { //declarar variable de lista fija actualizada
     const [usuarios, setUsuarios] = useState([]);
     const [clientes, setClientes] = useState([]);
     const [motocicletas, setMotocicletas] = useState([]);
